@@ -52,7 +52,9 @@ function filters() {
 
 function matches(item) {
   const term = state.query.trim().toLowerCase();
-  if (term && ![item.name,item.info,item.type,item.category,item.status].join(' ').toLowerCase().includes(term)) return false;
+  const haystack = [item.name,item.info,item.type,item.category,item.status,
+    window.uiLocale?.searchLabels?.(item.type,item.category,item.status,item.info)].filter(Boolean).join(' ').toLowerCase();
+  if (term && !haystack.includes(term)) return false;
   if (state.category && ![item.category,item.type].includes(state.category)) return false;
   if (state.tab > 1) return false;
   const f = state.filters;
@@ -126,6 +128,7 @@ function render({ focus = false } = {}) {
   if (!['home','search','detail','apply','receipt'].includes(route)) route='home';
   if (route==='receipt' && !state.receipt) route='home';
   main.innerHTML = ({home, search:results, detail, apply, receipt})[route]();
+  window.uiLocale?.apply();
   if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
 
@@ -137,6 +140,7 @@ function navigate(route) {
 function showDialog(content) {
   dialog.innerHTML = content;
   if (!dialog.open) dialog.showModal();
+  window.uiLocale?.apply();
 }
 
 function saveDraft(form) { state.draft = Object.fromEntries(new FormData(form)); }
@@ -154,6 +158,9 @@ document.addEventListener('submit', event => {
     event.preventDefault(); saveDraft(form);
     showDialog(`<h2 id="dialog-title">신청 내용 최종 확인</h2>${alert('이 일정으로 신청할까요?','신청 접수 후 운영기관이 승인하면 예약이 확정됩니다.')}${summary()}<div class="actions"><button class="btn" data-action="close">다시 확인</button><button class="btn primary-btn" data-action="submit">예약 신청 제출</button></div>`);
   }
+});
+document.addEventListener('input', e => {
+  if (e.target.form?.id === 'reservation') saveDraft(e.target.form);
 });
 document.addEventListener('change', e => {
   if(e.target.id==='time') state.time=e.target.value;

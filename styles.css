@@ -254,3 +254,27 @@ dialog::backdrop { background: rgb(15 23 42 / .48); }
   .footer-meta { flex-direction: column; }
   .related .facility:not(:first-child) { display: none; }
 }
+
+
+/* Locale switcher: simple accessible control without changing the KRDS-inspired UI. */
+.language-control { display:flex; align-items:center; min-width:0; }
+.language-control select { width: 126px; min-height:44px; padding:8px 30px 8px 10px; border:1px solid #58616a; border-radius:8px; background-color:#fff; font-size:14px; color:var(--ink); }
+.mobile-lang { display:none; }
+.tabs { min-width:0; }
+.tabs button { white-space:normal; overflow-wrap:anywhere; }
+.category strong, .card-copy strong { overflow-wrap:anywhere; }
+@media (max-width: 720px) {
+  .header-row { gap:8px; }
+  .header-row .brand { min-width:0; }
+  .mobile-lang { display:flex; flex:0 0 94px; }
+  .mobile-lang select { width:94px; font-size:12px; padding-left:6px; padding-right:24px; background-position:right 5px center; background-size:14px 14px; }
+  .mobile-menu { flex:0 0 auto; font-size:12px; }
+  .mobile-menu summary { white-space:nowrap; }
+  .tabs button { min-width:0; }
+}
+@media (max-width: 360px) {
+  .header-row .brand img { width:28px; height:28px; }
+  .header-row .brand strong { font-size:19px; }
+  .mobile-lang { flex-basis:90px; }
+  .mobile-lang select { width:90px; }
+}

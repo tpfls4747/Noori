@@ -1,0 +1,20 @@
+name: i18n smoke checks
+on:
+  pull_request:
+  push:
+    branches:
+      - feature/i18n-ko-en-fr
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check i18n.js
+      - name: Test locale switching and search
+        run: node --test tests/i18n.test.cjs
