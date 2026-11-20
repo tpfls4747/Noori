@@ -52,7 +52,9 @@ function filters() {
 
 function matches(item) {
   const term = state.query.trim().toLowerCase();
-  if (term && ![item.name,item.info,item.type,item.category,item.status].join(' ').toLowerCase().includes(term)) return false;
+  const haystack = [item.name,item.info,item.type,item.category,item.status,
+    window.uiLocale?.searchLabels?.(item.type,item.category,item.status,item.info)].filter(Boolean).join(' ').toLowerCase();
+  if (term && !haystack.includes(term)) return false;
   if (state.category && ![item.category,item.type].includes(state.category)) return false;
   if (state.tab > 1) return false;
   const f = state.filters;
