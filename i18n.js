@@ -282,7 +282,8 @@
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let node;
     while ((node=walker.nextNode())) {
-      if (node.parentElement?.closest('script,style')) continue;
+      // Never translate user-generated textarea content.
+      if (node.parentElement?.closest('script,style,textarea,[contenteditable="true"]')) continue;
       if (!sourceTexts.has(node)) sourceTexts.set(node,node.nodeValue);
       const translated = translate(sourceTexts.get(node));
       if (node.nodeValue !== translated) node.nodeValue=translated;
@@ -341,5 +342,15 @@
     if (e.target.matches('[data-language-select]')) setLanguage(e.target.value);
   });
   document.addEventListener('DOMContentLoaded',apply);
-  window.uiLocale={apply,setLanguage,get language(){return current;}};
+  function searchLabels(...sourceFields) {
+    if (current==='ko') return '';
+    return sourceFields.map(value => {
+      if (!value) return '';
+      const text=String(value);
+      const direct=dictionaries[current][text];
+      if (direct) return direct;
+      return text.split(/(\s+·\s+)/).map(part=>dictionaries[current][part]||part).join('');
+    }).join(' ');
+  }
+  window.uiLocale={apply,setLanguage,searchLabels,get language(){return current;}};
 })();
