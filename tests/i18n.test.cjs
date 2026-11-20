@@ -11,7 +11,7 @@ function start() {
     addEventListener(){}, querySelector(){return null;}, querySelectorAll(){return []}
   };
   const context = {
-    window:{},document,location,URL,Date,Intl,
+    window:{},document,location,URL,URLSearchParams,Date,Intl,
     localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},
     history:{replaceState(_state,_title,uri){const u=new URL(uri,location.href);Object.assign(location,{href:u.href,pathname:u.pathname,search:u.search,hash:u.hash});}}
   };
