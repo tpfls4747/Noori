@@ -104,7 +104,8 @@
       '신청 접수 후 운영기관이 승인하면 예약이 확정됩니다.':'Your reservation will be confirmed once the provider approves your request.',
       '다시 확인':'Review again','예약 신청 제출':'Submit request',
       '예약 내역':'Reservations','접수 결과로 돌아가기':'Back to submission',
-      '닫기':'Close','표시 언어':'Display language'
+      '닫기':'Close','표시 언어':'Display language',
+      '○○시민체육관의 실내 배드민턴장입니다. 이용 가능 시간과 승인 절차를 확인한 뒤 신청해 주세요.':'This is an indoor badminton court in ○○ Civic Sports Center. Check the available hours and approval process before applying.'
     },
     fr: {
       '본문 바로가기':'Aller au contenu','UX/UI 콘셉트 데모':'Démo de concept UX/UI',
@@ -220,7 +221,8 @@
       '다시 확인':'Vérifier à nouveau','예약 신청 제출':'Envoyer la demande',
       '예약 내역':'Mes réservations',
       '접수 결과로 돌아가기':'Retour au récapitulatif',
-      '닫기':'Fermer','표시 언어':'Langue d’affichage'
+      '닫기':'Fermer','표시 언어':'Langue d’affichage',
+      '○○시민체육관의 실내 배드민턴장입니다. 이용 가능 시간과 승인 절차를 확인한 뒤 신청해 주세요.':'Il s’agit d’un terrain de badminton couvert au centre sportif municipal ○○. Consultez les horaires et la procédure d’approbation avant de faire votre demande.'
     }
   };
 
@@ -273,6 +275,10 @@
 
   function localizeElement(root) {
     if (!root) return;
+    // Freeze option values BEFORE translating their visible labels so FormData, filters,
+    // category logic, and selected time slots always use the original stable values.
+    const options = [root, ...root.querySelectorAll('option')].filter(e=>e.tagName==='OPTION' && !e.hasAttribute('value'));
+    options.forEach(option=>option.setAttribute('value', option.textContent.trim()));
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let node;
     while ((node=walker.nextNode())) {
@@ -283,10 +289,6 @@
     }
     const els = [root, ...root.querySelectorAll('*')].filter(e=>e.nodeType===1);
     for (const el of els) {
-      if (el.tagName === 'OPTION' && !el.hasAttribute('value')) {
-        // Translating an <option> label must never change the submitted value.
-        el.value=el.textContent.trim();
-      }
       for (const name of ['placeholder','aria-label','title','alt']) {
         if (!el.hasAttribute(name)) continue;
         let originals=sourceAttrs.get(el);
@@ -301,6 +303,14 @@
   function apply() {
     document.documentElement.lang=current;
     localizeElement(document.body);
+    const weekdayLabels = {
+      ko:['일','월','화','수','목','금','토'],
+      en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+      fr:['dim.','lun.','mar.','mer.','jeu.','ven.','sam.']
+    };
+    document.querySelectorAll('.week span').forEach((el,i) => {
+      if (i < 7) el.textContent=weekdayLabels[current][i];
+    });
     const pageTitle = {ko:'공유누리 | UX/UI 콘셉트 데모',
       en:'ShareNuri | UX/UI concept demo', fr:'ShareNuri | Démo de concept UX/UI'};
     const descriptions={ko:'공유누리 공공시설 예약 UX/UI 콘셉트 데모',
@@ -320,6 +330,9 @@
     url.searchParams.set('lang',lang);
     history.replaceState(history.state,'',url.pathname+url.search+url.hash);
     // app.js regenerates dynamic screens from canonical Korean data.
+    // Preserve any text the user is in the middle of typing.
+    const form=document.querySelector('#reservation');
+    if (form && typeof saveDraft==='function') saveDraft(form);
     if (typeof render==='function') render();
     apply();
   }
