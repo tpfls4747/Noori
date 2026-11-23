@@ -10,5 +10,9 @@
 
 예약 데이터는 브라우저 메모리에만 유지되며 페이지를 새로고침하면 초기화됩니다. 예시 시설, 날짜와 시간대는 시연용 가상 데이터입니다. 이 웹 구현은 Figma 인스턴스와 별도로 작성한 HTML·CSS·JavaScript입니다.
 
-배포 승인 후 정적 호스팅에 `index.html`, `styles.css`, `app.js`, `assets/`를 함께 올리면 됩니다. 빌드, 서버 로직, 환경변수, 외부 예약 API가 필요하지 않습니다. 공개 호스팅에 올리기 전 프로젝트에 포함된 이미지와 로고의 공개 사용 권한을 확인하세요.
+헤더에서 한국어, English, Français를 선택할 수 있습니다. 한국어가 기본값이며, 선택한 언어는 브라우저에 저장됩니다. 화면을 이동하거나 새로고침해도 언어가 유지되고, 같은 화면에서 언어를 바꾸면 작성 중인 신청 내용과 선택한 일정이 유지됩니다.
+
+번역은 `locales/ko.js`, `locales/en.js`, `locales/fr.js`에서 관리합니다. 번역이 비어 있으면 한국어를 표시합니다.
+
+Render Static Site에서는 Build Command를 `true`, Publish Directory를 `.`로 설정합니다. `index.html`, `styles.css`, `app.js`, `i18n.js`, `locales/`, `assets/`를 함께 배포합니다. 승인된 변경을 기본 브랜치에 반영한 후 기존 Render 서비스에서 해당 커밋을 배포하면 기존 URL을 유지할 수 있습니다.
 

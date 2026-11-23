@@ -6,17 +6,22 @@
   <meta name="description" content="공유누리 공공시설 예약 UX/UI 콘셉트 데모">
   <title>공유누리 | UX/UI 콘셉트 데모</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="locales/ko.js" defer></script>
+  <script src="locales/en.js" defer></script>
+  <script src="locales/fr.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">본문 바로가기</a>
-  <div class="mast"><div class="wrap"><span aria-hidden="true">🇰🇷</span> <strong>UX/UI 콘셉트 데모</strong> · 가상 데이터로 시연하며 실제 예약은 접수되지 않습니다.</div></div>
+  <div class="mast"><div class="wrap"><strong>UX/UI 콘셉트 데모</strong> · 가상 데이터로 시연하며 실제 예약은 접수되지 않습니다.</div></div>
   <header>
     <div class="wrap header-row">
       <a class="brand" href="#home" aria-label="공유누리 메인"><img src="assets/brand-text.svg" alt=""><span><small>공공개방자원 多가치 나눔터</small><strong>공유누리</strong></span></a>
       <form class="search header-search" role="search" data-search><label class="sr" for="header-query">통합검색</label><input id="header-query" name="query" placeholder="검색어를 입력해 주세요"><button aria-label="검색"><img src="assets/search.svg" alt=""></button></form>
       <div class="utilities"><span>로그인</span><span>회원가입</span><span>사이트맵</span><span class="support"><img src="assets/headphones.svg" alt=""> 상담센터 1644-6566</span></div>
-      <details class="mobile-menu"><summary>전체메뉴</summary><a href="#search">공유신청·예약</a><a href="#home">메인</a></details>
+      <div class="header-end"><div class="language-control"><label class="sr" for="language">표시 언어</label><select id="language"><option value="ko" lang="ko" data-i18n-keep>한국어</option><option value="en" lang="en" data-i18n-keep>English</option><option value="fr" lang="fr" data-i18n-keep>Français</option></select></div>
+      <details class="mobile-menu"><summary>전체메뉴</summary><a href="#search">공유신청·예약</a><a href="#home">메인</a></details></div>
     </div>
     <nav class="primary" aria-label="주 메뉴"><div class="wrap"><a href="#search">공유신청·예약</a><span>공유지도</span><span>커뮤니티</span><span>마이페이지</span></div></nav>
   </header>
@@ -24,7 +29,7 @@
   <footer>
     <div class="footer-rails"><div class="wrap"><details><summary>공지사항</summary><p>공유누리 콘셉트 데모입니다.</p></details><details><summary>관련사이트</summary><a href="https://www.eshare.go.kr/">공식 공유누리</a></details></div></div>
     <div class="wrap footer-body">
-      <div><div class="footer-brands"><img src="assets/brand-extra.svg" alt="대한민국정부"><a class="brand" href="#home"><img src="assets/footer-extra.svg" alt=""><span><small>공공개방자원 多가치 나눔터</small><strong>공유누리</strong></span></a></div><p>30112 세종특별자치시 도움6로 42(어진동)<br>35208 대전광역시 서구 청사로 189 정부대전청사 3동</p></div>
+      <div><div class="footer-brands"><img src="assets/brand-extra.svg" alt="대한민국정부"><a class="brand" href="#home"><img src="assets/footer-extra.svg" alt=""><span><small>공공개방자원 多가치 나눔터</small><strong>공유누리</strong></span></a></div><p lang="ko" data-i18n-keep>30112 세종특별자치시 도움6로 42(어진동)<br>35208 대전광역시 서구 청사로 189 정부대전청사 3동</p></div>
       <div><div class="footer-links">공유누리 소개<br>활용가이드<br>OPEN API<br>고객센터</div><div class="social" aria-hidden="true"><img src="assets/blog.svg" alt=""><img src="assets/instagram.svg" alt=""><img src="assets/youtube.svg" alt=""><img src="assets/facebook.svg" alt=""><img src="assets/x.svg" alt=""></div></div>
       <div class="footer-meta"><span>이용안내　<strong>개인정보처리방침</strong>　저작권정책</span><span>© Ministry of the Interior and Safety</span></div>
     </div>

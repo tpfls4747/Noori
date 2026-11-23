@@ -23,14 +23,16 @@ const state = { query: '', category: '', tab: 0, item: facilities[0], day: 26, a
 const safe = (s = '') => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const icon = (name) => `<img class="icon" src="assets/${name}.svg" alt="">`;
 const button = (label, target, kind = '') => `<a class="btn ${kind}" href="#${target}">${label}</a>`;
-const date = () => `2026-11-${String(state.acceptedDay).padStart(2,'0')}(${'일월화수목금토'[(state.acceptedDay-1)%7]})`;
-const dateTime = () => `${date()} <span class="time-text">${state.time}</span>`;
+const isoDay = (day = state.acceptedDay) => `2026-11-${String(day).padStart(2,'0')}`;
+const date = (day = state.acceptedDay) => `<time data-format="date" data-value="${isoDay(day)}" datetime="${isoDay(day)}"></time>`;
+const timeRange = (value) => `<span class="time-text" data-format="range" data-value="${value}"></span>`;
+const dateTime = () => `${date()} ${timeRange(state.time)}`;
 const table = (pairs) => `<dl class="data-table">${pairs.map(([term,value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join('')}</dl>`;
 const alert = (heading, body, kind = 'info') => `<div class="notice ${kind}"><span class="notice-icon" aria-hidden="true">${kind==='success'?'✓':'i'}</span><div><strong>${heading}</strong><p>${body}</p></div></div>`;
 const search = (id, value = '') => `<form class="search" role="search" data-search><label class="sr" for="${id}">시설명이나 지역</label><input id="${id}" name="query" value="${safe(value)}" placeholder="시설명이나 지역을 검색해 주세요"><button aria-label="검색" type="submit">${icon('search')}</button></form>`;
 const crumb = (label) => `<nav class="crumb" aria-label="현재 위치"><a href="#home">홈</a> ${icon('chevron')} <a href="#search">공유신청·예약</a> ${icon('chevron')} <span aria-current="page">${label}</span></nav>`;
-const card = (item) => `<button class="card facility ${item.id===1?'featured':''}" type="button" data-facility="${item.id}"><img src="assets/facility-${item.id}.png" alt=""><span class="card-copy"><strong>${item.name} ${icon('chevron')}</strong><span>${item.id===1?item.info:`${item.type} · ${item.info}`}</span>${item.status?`<span>${item.status}</span>`:''}</span></button>`;
-const steps = (current) => `<ol class="steps" aria-label="예약 진행 단계">${['시설·일정 선택','신청 정보 입력','신청 접수'].map((s,i)=>`<li class="${i<current?'done':i===current?'current':''}" ${i===current?'aria-current="step"':''}><span class="step-dot">${i<current||current===2?'✓':''}</span><small>${i+1}단계</small><span>${s}</span></li>`).join('')}</ol>`;
+const card = (item) => `<button class="card facility ${item.id===1?'featured':''}" type="button" data-facility="${item.id}"><img src="assets/facility-${item.id}.png" alt=""><span class="card-copy"><strong><span class="facility-name" lang="ko" data-i18n-keep>${item.name}</span> ${icon('chevron')}</strong><span>${item.id===1?item.info:`${item.type} · ${item.info}`}</span>${item.status?`<span>${item.status}</span>`:''}</span></button>`;
+const steps = (current) => `<ol class="steps" aria-label="예약 진행 단계">${['시설·일정 선택','신청 정보 입력','신청 접수'].map((s,i)=>`<li class="${i<current?'done':i===current?'current':''}" ${i===current?'aria-current="step"':''}><span class="step-dot">${i<current||current===2?'✓':''}</span><small data-format="step" data-value="${i+1}"></small><span>${s}</span></li>`).join('')}</ol>`;
 
 function home() {
   const map = ['무장애나눔길','예식장소 대관','축제 안내','물품 대여','교육강좌 안내','도서공연·둘레길','캠핑장·휴양림','주차장 안내'];
@@ -46,13 +48,17 @@ function home() {
 function filters() {
   const checked = (name, v) => (state.filters[name]||[]).includes(v)?'checked':'';
   const checks = (name, values, chip = false) => `<div class="${chip?'chips':'choices'}">${values.map(v=>`<label class="${chip?'check-chip':''}"><input name="${name}" type="checkbox" value="${v}" ${checked(name,v)}><span>${v}</span></label>`).join('')}</div>`;
-  return `<form data-filters><h3>검색 조건</h3><fieldset><legend>지역</legend><label>시·도<select name="region"><option value="">시·도 선택</option><option ${checked('region','○○시')?'selected':''}>○○시</option></select></label><label>시·군·구<select name="district"><option value="">시·군·구 선택</option><option ${checked('district','○○구')?'selected':''}>○○구</option></select></label></fieldset>
+  return `<form data-filters><h3>검색 조건</h3><fieldset><legend>지역</legend><label>시·도<select name="region"><option value="">시·도 선택</option><option value="○○시" lang="ko" ${checked('region','○○시')?'selected':''}>○○시</option></select></label><label>시·군·구<select name="district"><option value="">시·군·구 선택</option><option value="○○구" lang="ko" ${checked('district','○○구')?'selected':''}>○○구</option></select></label></fieldset>
   <fieldset><legend>자원분류</legend>${checks('categories',filterCategories,true)}</fieldset><fieldset><legend>예약구분</legend>${checks('booking',['실시간예약','간편예약'])}</fieldset><fieldset><legend>승인구분</legend>${checks('approval',['자동승인','심사 후 승인'])}</fieldset><fieldset><legend>결제구분</legend>${checks('fee',['유료','무료'])}</fieldset><fieldset><legend>날짜선택 유형</legend><div class="choices inline">${['전체','1일 이상','1일'].map(v=>`<label><input type="radio" name="period" value="${v}" ${(state.filters.period?.[0]||'전체')===v?'checked':''}>${v}</label>`).join('')}</div></fieldset><div class="filter-actions"><button type="button" class="btn" data-action="reset">초기화</button><button class="btn primary-btn">검색결과 보기</button></div></form>`;
 }
 
 function matches(item) {
   const term = state.query.trim().toLowerCase();
-  if (term && ![item.name,item.info,item.type,item.category,item.status].join(' ').toLowerCase().includes(term)) return false;
+  const fields = [item.name,item.info,item.type,item.category,item.status].filter(Boolean);
+  if (item.id === 1) fields.push('배드민턴');
+  const normalize = value => value.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  const searchable = normalize([...fields, ...fields.map(i18n.translate)].join(' '));
+  if (term && !searchable.includes(normalize(term))) return false;
   if (state.category && ![item.category,item.type].includes(state.category)) return false;
   if (state.tab > 1) return false;
   const f = state.filters;
@@ -68,33 +74,33 @@ function results() {
   const items = facilities.filter(matches);
   return `<div class="wrap page">${crumb('검색결과')}<h1>검색결과</h1>${search('result-query',state.query)}
     <div class="results-layout"><aside class="filter desktop-filter">${filters()}</aside><section aria-label="시설 검색 결과">
-      <div class="result-tools"><strong role="status">총 ${items.length}건</strong><button class="btn mobile-filter" data-action="filter">검색 조건</button><div class="tabs" aria-label="결과 분류">${tabs.map((t,i)=>`<button class="${state.tab===i?'selected':''}" aria-pressed="${state.tab===i}" data-tab="${i}">${t}</button>`).join('')}</div></div>
+      <div class="result-tools"><strong role="status" data-format="result" data-value="${items.length}"></strong><button class="btn mobile-filter" data-action="filter">검색 조건</button><div class="tabs" aria-label="결과 분류">${tabs.map((t,i)=>`<button class="${state.tab===i?'selected':''}" aria-pressed="${state.tab===i}" data-tab="${i}">${t}</button>`).join('')}</div></div>
       ${items.length?`<div class="card-grid">${items.map(card).join('')}</div>`:`<div class="empty">${alert('조건에 맞는 결과가 없어요','지역이나 자원분류 조건을 바꿔 다시 검색해 주세요.')}<button class="btn" data-action="reset">검색 조건 초기화</button></div>`}
     </section></div></div>`;
 }
 
 function calendar() {
   const days = Array.from({length:42},(_,i)=>i+1);
-  return `<div class="calendar"><div class="calendar-title">2026년　11월</div><div class="calendar-grid"><div class="week">${[...'일월화수목금토'].map(d=>`<span>${d}</span>`).join('')}</div><strong>2026년 11월</strong><div class="days">${days.map(d=>d>30?`<span class="inactive">${d-30}</span>`:`<button type="button" aria-label="11월 ${d}일" aria-pressed="${state.day===d}" class="${state.day===d?'selected':''}" data-day="${d}">${d}</button>`).join('')}</div></div><div class="calendar-actions"><span>11월</span><button class="btn small" data-action="cancel-date">취소</button><button class="btn small primary-btn" data-action="confirm-date">선택</button></div></div>`;
+  return `<div class="calendar"><div class="calendar-title" data-format="month"></div><div class="calendar-grid"><div class="week">${[...'일월화수목금토'].map((d,i)=>`<span data-format="weekday" data-value="${i}"></span>`).join('')}</div><strong data-format="month"></strong><div class="days">${days.map(d=>d>30?`<span class="inactive">${d-30}</span>`:`<button type="button" data-format="day-label" data-value="${isoDay(d)}" aria-pressed="${state.day===d}" class="${state.day===d?'selected':''}" data-day="${d}">${d}</button>`).join('')}</div></div><div class="calendar-actions"><span data-format="month-only"></span><button class="btn small" data-action="cancel-date">취소</button><button class="btn small primary-btn" data-action="confirm-date">선택</button></div></div>`;
 }
 
 function detail() {
   const f = state.item;
   const photos = f.id===1?['facility-1.png','gallery-1.svg','gallery-2.svg','gallery-3.svg']:[`facility-${f.id}.png`];
-  return `<div class="wrap page detail-page">${crumb('시설 상세')}<div class="detail-title"><div class="badges"><span class="badge success">예약가능</span><span class="badge outline">${f.type}</span></div><h1>${f.name}</h1></div>
+  return `<div class="wrap page detail-page">${crumb('시설 상세')}<div class="detail-title"><div class="badges"><span class="badge success">예약가능</span><span class="badge outline">${f.type}</span></div><h1 lang="ko" data-i18n-keep>${f.name}</h1></div>
     <div class="approval-note">${alert('운영기관 승인 후 예약 확정','마이페이지 > 예약내역에서 승인 여부를 확인해 주세요.')}</div>
     <div class="detail-layout">
-      <div class="detail-left"><section class="gallery" aria-label="시설 사진"><img class="main-photo" src="assets/${photos[state.photo]}" alt="${f.name} 사진">
-      ${photos.length>1?`<div class="thumbs">${photos.slice(1).map((src,i)=>`<button type="button" data-photo="${i+1}" aria-label="시설 사진 ${i+2}" aria-pressed="${state.photo===i+1}"><img src="assets/${src}" alt=""></button>`).join('')}</div>`:''}</section>
-      <section class="about"><h2>시설 소개</h2><p>${f.id===1?'○○시민체육관의 실내 배드민턴장입니다. 이용 가능 시간과 승인 절차를 확인한 뒤 신청해 주세요.':`${f.name}의 이용 일정과 신청 정보를 확인해 주세요.`}</p>${f.id===1?'<span class="tag">주차 가능</span>':''}</section>
-      <section class="policy"><h3>이용 및 취소 안내</h3><p>${f.id===1?'이용료는 무료입니다. ':''}일정 변경·취소 조건은 제공기관의 이용 안내를 확인해 주세요.</p></section></div>
+      <div class="detail-left"><section class="gallery" aria-label="시설 사진"><img class="main-photo" src="assets/${photos[state.photo]}" data-format="photo-alt" data-name="${f.name}" alt="">
+      ${photos.length>1?`<div class="thumbs">${photos.slice(1).map((src,i)=>`<button type="button" data-photo="${i+1}" data-format="photo-label" data-value="${i+2}" aria-pressed="${state.photo===i+1}"><img src="assets/${src}" alt=""></button>`).join('')}</div>`:''}</section>
+      <section class="about"><h2>시설 소개</h2><p>${f.id===1?'○○시민체육관의 실내 배드민턴장입니다. 이용 가능 시간과 승인 절차를 확인한 뒤 신청해 주세요.':'시설 일정 확인'}</p>${f.id===1?'<span class="tag">주차 가능</span>':''}</section>
+      <section class="policy"><h3>이용 및 취소 안내</h3><p>${f.id===1?'<span>이용료는 무료입니다.</span> ':''}<span>일정 변경·취소 조건은 제공기관의 이용 안내를 확인해 주세요.</span></p></section></div>
       <div class="detail-right"><section class="facility-info"><h2>시설 정보</h2>${table(f.id===1?[['제공기관','○○시청'],['이용 지역','○○시 ○○구'],['예약구분','실시간예약'],['승인구분','심사 후 승인'],['결제구분','무료']]:[['자원분류',f.type],['이용 안내',f.info]])}</section>
-      <section class="schedule"><h2>이용일·시간 선택</h2>${calendar()}<label>11월 ${state.acceptedDay}일(${'일월화수목금토'[(state.acceptedDay-1)%7]}) 이용 시간<select id="time" name="time">${times.map(t=>`<option ${state.time===t?'selected':''}>${t}</option>`).join('')}</select></label><div class="actions">${button('이 일정으로 신청','apply','primary-btn')}${button('목록으로','search')}</div></section></div>
+      <section class="schedule"><h2>이용일·시간 선택</h2>${calendar()}<label><span data-format="time-label" data-value="${isoDay()}"></span><select id="time" name="time">${times.map(t=>`<option value="${t}" data-format="range" data-value="${t}" ${state.time===t?'selected':''}></option>`).join('')}</select></label><div class="actions">${button('이 일정으로 신청','apply','primary-btn')}${button('목록으로','search')}</div></section></div>
     </div>
   </div>`;
 }
 
-const summary = () => table([['시설명',state.item.name],['이용일시',dateTime()]]);
+const summary = () => table([['시설명','<span lang="ko" data-i18n-keep>'+state.item.name+'</span>'],['이용일시',dateTime()]]);
 function apply() {
   const d = state.draft || {};
   return `<div class="wrap page">${crumb('예약 신청')}<h1>예약 신청</h1>${steps(1)}<h2>신청 정보 입력</h2><div class="application">
@@ -103,7 +109,7 @@ function apply() {
     <label>신청자명 (필수)<input name="name" autocomplete="off" required placeholder="이름을 입력해 주세요." value="${safe(d.name)}"></label>
     <div class="contact"><label>휴대전화 (필수)<input name="phone" type="tel" autocomplete="off" inputmode="tel" pattern="01[0-9]-?[0-9]{3,4}-?[0-9]{4}" required placeholder="예: 010-1234-5678" value="${safe(d.phone)}"></label><label>이메일 (선택)<input name="email" type="email" autocomplete="off" placeholder="이메일 주소를 입력해 주세요." value="${safe(d.email)}"></label></div>
     <fieldset><legend>이용 구분</legend><div class="choices inline">${['개인','단체'].map(v=>`<label><input type="radio" name="type" value="${v}" ${(d.type||'개인')===v?'checked':''}>${v}</label>`).join('')}</div></fieldset>
-    <label>이용 인원 (필수)<select name="people" required><option value="">인원을 선택해 주세요.</option>${[1,2,3,4,5,6,7,8,9,10].map(i=>`<option value="${i}" ${Number(d.people)===i?'selected':''}>${i}명</option>`).join('')}</select></label>
+    <label>이용 인원 (필수)<select name="people" required><option value="">인원을 선택해 주세요.</option>${[1,2,3,4,5,6,7,8,9,10].map(i=>`<option value="${i}" data-format="participants" data-value="${i}" ${Number(d.people)===i?'selected':''}></option>`).join('')}</select></label>
     <label>이용 목적 (필수)<textarea name="purpose" required placeholder="이용 목적을 입력해 주세요.">${safe(d.purpose)}</textarea></label>
     <fieldset class="agreements"><legend>약관 동의</legend><div class="choices"><label><input type="checkbox" name="terms" required ${d.terms?'checked':''}>이용 약관 동의 (필수)</label><label><input type="checkbox" name="privacy" required ${d.privacy?'checked':''}>개인정보 수집·이용 동의 (필수)</label></div></fieldset>
     <div class="actions">${button('이전으로','detail')}<button class="btn primary-btn" type="submit">신청 내용 확인</button></div></form></div></div>`;
@@ -111,7 +117,7 @@ function apply() {
 
 function receiptTable() {
   const r = state.receipt;
-  return table([['접수번호',r.number],['시설명',r.facility],['이용일시',r.date+' <span class="time-text">'+r.time+'</span>'],['신청자',safe(r.name)],['신청 상태','승인 대기']]);
+  return table([['접수번호',r.number],['시설명','<span lang="ko" data-i18n-keep>'+r.facility+'</span>'],['이용일시',date(r.day)+' '+timeRange(r.time)],['신청자','<span data-i18n-keep>'+safe(r.name)+'</span>'],['신청 상태','승인 대기']]);
 }
 const statusNote = () => alert('승인 여부 확인','마이페이지 > 예약내역에서 승인 여부를 확인해 주세요.');
 
@@ -126,6 +132,7 @@ function render({ focus = false } = {}) {
   if (!['home','search','detail','apply','receipt'].includes(route)) route='home';
   if (route==='receipt' && !state.receipt) route='home';
   main.innerHTML = ({home, search:results, detail, apply, receipt})[route]();
+  i18n.localize(main);
   if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
 
@@ -136,6 +143,7 @@ function navigate(route) {
 
 function showDialog(content) {
   dialog.innerHTML = content;
+  i18n.localize(dialog);
   if (!dialog.open) dialog.showModal();
 }
 
@@ -183,7 +191,7 @@ document.addEventListener('click', e => {
     case 'close': dialog.close(); break;
     case 'submit':
       if(!state.draft) return;
-      state.receipt={number:`2026-11${String(state.acceptedDay).padStart(2,'0')}-0001`,facility:state.item.name,date:date(),time:state.time,name:state.draft.name};
+      state.receipt={number:`2026-11${String(state.acceptedDay).padStart(2,'0')}-0001`,facility:state.item.name,day:state.acceptedDay,time:state.time,name:state.draft.name};
       dialog.close(); navigate('receipt'); break;
     case 'history': showDialog(`<h2 id="dialog-title">예약 내역</h2><div class="receipt-title"><strong>신청 내용</strong><span class="badge waiting">승인 대기</span></div>${receiptTable()}${statusNote()}<button class="btn" data-action="close">접수 결과로 돌아가기</button>`); break;
   }
